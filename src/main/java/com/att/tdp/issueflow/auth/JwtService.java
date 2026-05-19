@@ -45,6 +45,11 @@ public class JwtService {
         return extractAllClaims(token).getSubject();
     }
 
+    public Long extractUserId(String token) {
+        Number userId = (Number) extractAllClaims(token).get("userId");
+        return userId.longValue();
+    }
+
     public String extractJti(String token) {
         return extractAllClaims(token).getId();
     }
