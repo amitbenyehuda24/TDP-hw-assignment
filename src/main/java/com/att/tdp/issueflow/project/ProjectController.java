@@ -2,6 +2,7 @@ package com.att.tdp.issueflow.project;
 
 import com.att.tdp.issueflow.project.dto.CreateProjectRequest;
 import com.att.tdp.issueflow.project.dto.ProjectResponse;
+import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,5 +31,10 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ProjectResponse findById(@PathVariable Long id) {
         return projectService.findById(id);
+    }
+
+    @PatchMapping("/{id}")
+    public ProjectResponse update(@PathVariable Long id, @Valid @RequestBody UpdateProjectRequest req) {
+        return projectService.updateProject(id, req);
     }
 }
