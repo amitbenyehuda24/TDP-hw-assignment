@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/projects")
 @RequiredArgsConstructor
@@ -18,5 +20,10 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<ProjectResponse> create(@Valid @RequestBody CreateProjectRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(req));
+    }
+
+    @GetMapping
+    public List<ProjectResponse> findAll() {
+        return projectService.findAll();
     }
 }

@@ -8,12 +8,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
+
+    public List<ProjectResponse> findAll() {
+        return projectRepository.findAllByDeletedAtIsNull()
+            .stream().map(ProjectResponse::new).toList();
+    }
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest req) {
