@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -42,6 +43,13 @@ public class ProjectService {
         project.setDescription(req.getDescription());
         project.setOwner(userService.getOrThrow(req.getOwnerId()));
         return new ProjectResponse(projectRepository.save(project));
+    }
+
+    @Transactional
+    public void deleteProject(Long id) {
+        Project project = getOrThrow(id);
+        project.setDeletedAt(OffsetDateTime.now());
+        projectRepository.save(project);
     }
 
     public Project getOrThrow(Long id) {

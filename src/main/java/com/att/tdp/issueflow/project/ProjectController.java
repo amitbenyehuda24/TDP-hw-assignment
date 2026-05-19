@@ -37,4 +37,10 @@ public class ProjectController {
     public ProjectResponse update(@PathVariable Long id, @Valid @RequestBody UpdateProjectRequest req) {
         return projectService.updateProject(id, req);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        projectService.deleteProject(id);
+    }
 }
