@@ -22,6 +22,10 @@ public class ProjectService {
             .stream().map(ProjectResponse::new).toList();
     }
 
+    public ProjectResponse findById(Long id) {
+        return new ProjectResponse(getOrThrow(id));
+    }
+
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest req) {
         Project project = new Project();
