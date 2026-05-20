@@ -16,12 +16,17 @@ import java.util.List;
 public class TicketDependencyService {
 
     private final TicketDependencyRepository dependencyRepository;
-    private final TicketService ticketService;
+    private final TicketRepository ticketRepository;
+
+    private Ticket getOrThrow(Long id) {
+        return ticketRepository.findByIdAndDeletedAtIsNull(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+    }
 
     @Transactional
     public DependencyResponse addDependency(Long ticketId, AddDependencyRequest req) {
-        Ticket ticket  = ticketService.getOrThrow(ticketId);
-        Ticket blocker = ticketService.getOrThrow(req.getBlockedBy());
+        Ticket ticket  = getOrThrow(ticketId);
+        Ticket blocker = getOrThrow(req.getBlockedBy());
 
         if (ticket.getId().equals(blocker.getId())) {
             throw new BadRequestException("A ticket cannot depend on itself");
@@ -44,7 +49,7 @@ public class TicketDependencyService {
     }
 
     public List<DependencyResponse> getDependencies(Long ticketId) {
-        ticketService.getOrThrow(ticketId);
+        getOrThrow(ticketId);
         return dependencyRepository.findAllByTicketId(ticketId)
             .stream().map(d -> new DependencyResponse(d.getBlocker())).toList();
     }

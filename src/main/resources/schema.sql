@@ -3,8 +3,6 @@
 -- All tables use CREATE TABLE IF NOT EXISTS for idempotency.
 -- =============================================================
 
-DROP TABLE IF EXISTS task;
-
 -- ----- USERS -----------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id            BIGSERIAL    PRIMARY KEY,
