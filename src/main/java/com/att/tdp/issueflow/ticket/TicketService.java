@@ -23,6 +23,7 @@ public class TicketService {
     private final ProjectService projectService;
     private final UserService userService;
     private final AuditLogService auditLogService;
+    private final TicketDependencyService dependencyService;
 
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest req) {
@@ -66,6 +67,9 @@ public class TicketService {
                 throw new BadRequestException(
                     "Invalid status transition: " + ticket.getStatus() + " -> " + req.getStatus()
                 );
+            }
+            if (req.getStatus() == TicketStatus.DONE && dependencyService.hasUnresolvedBlockers(id)) {
+                throw new BadRequestException("Cannot mark ticket as DONE: it has unresolved blockers");
             }
             ticket.setStatus(req.getStatus());
         }
