@@ -5,10 +5,12 @@ import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
 import com.att.tdp.issueflow.ticket.TicketService;
 import com.att.tdp.issueflow.ticket.dto.TicketResponse;
+import com.att.tdp.issueflow.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final TicketService ticketService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<ProjectResponse> create(@Valid @RequestBody CreateProjectRequest req) {
@@ -50,5 +53,17 @@ public class ProjectController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         projectService.deleteProject(id);
+    }
+
+    @GetMapping("/deleted")
+    public List<ProjectResponse> findDeleted(Authentication authentication) {
+        userService.requireAdmin((Long) authentication.getPrincipal());
+        return projectService.findDeleted();
+    }
+
+    @PostMapping("/{id}/restore")
+    public ProjectResponse restore(@PathVariable Long id, Authentication authentication) {
+        userService.requireAdmin((Long) authentication.getPrincipal());
+        return projectService.restoreProject(id);
     }
 }

@@ -99,4 +99,19 @@ public class TicketService {
         return ticketRepository.findByIdAndDeletedAtIsNull(id)
             .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
     }
+
+    public List<TicketResponse> findDeleted(Long projectId) {
+        return ticketRepository.findAllByProjectIdAndDeletedAtIsNotNull(projectId)
+            .stream().map(TicketResponse::new).toList();
+    }
+
+    @Transactional
+    public TicketResponse restoreTicket(Long id) {
+        Ticket ticket = ticketRepository.findByIdAndDeletedAtIsNotNull(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Deleted ticket not found with id: " + id));
+        ticket.setDeletedAt(null);
+        TicketResponse restored = new TicketResponse(ticketRepository.save(ticket));
+        auditLogService.log("TICKET", "RESTORE", id, null, restored);
+        return restored;
+    }
 }

@@ -1,6 +1,7 @@
 package com.att.tdp.issueflow.user;
 
 import com.att.tdp.issueflow.common.exception.ConflictException;
+import com.att.tdp.issueflow.common.exception.ForbiddenException;
 import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
 import com.att.tdp.issueflow.user.dto.CreateUserRequest;
 import com.att.tdp.issueflow.user.dto.UpdateUserRequest;
@@ -66,5 +67,11 @@ public class UserService {
     public User getOrThrow(Long id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    public void requireAdmin(Long userId) {
+        if (getOrThrow(userId).getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Admin access required");
+        }
     }
 }

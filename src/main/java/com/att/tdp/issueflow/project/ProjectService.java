@@ -65,4 +65,19 @@ public class ProjectService {
         return projectRepository.findByIdAndDeletedAtIsNull(id)
             .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
     }
+
+    public List<ProjectResponse> findDeleted() {
+        return projectRepository.findAllByDeletedAtIsNotNull()
+            .stream().map(ProjectResponse::new).toList();
+    }
+
+    @Transactional
+    public ProjectResponse restoreProject(Long id) {
+        Project project = projectRepository.findByIdAndDeletedAtIsNotNull(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Deleted project not found with id: " + id));
+        project.setDeletedAt(null);
+        ProjectResponse restored = new ProjectResponse(projectRepository.save(project));
+        auditLogService.log("PROJECT", "RESTORE", id, null, restored);
+        return restored;
+    }
 }

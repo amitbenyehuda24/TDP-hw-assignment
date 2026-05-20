@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findAllByDeletedAtIsNull();
     Optional<Project> findByIdAndDeletedAtIsNull(Long id);
+    List<Project> findAllByDeletedAtIsNotNull();
+    Optional<Project> findByIdAndDeletedAtIsNotNull(Long id);
 }

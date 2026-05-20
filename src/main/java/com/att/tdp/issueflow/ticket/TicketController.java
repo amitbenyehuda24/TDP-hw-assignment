@@ -4,14 +4,18 @@ import com.att.tdp.issueflow.ticket.dto.CreateTicketRequest;
 import com.att.tdp.issueflow.ticket.dto.ImportSummaryResponse;
 import com.att.tdp.issueflow.ticket.dto.TicketResponse;
 import com.att.tdp.issueflow.ticket.dto.UpdateTicketRequest;
+import com.att.tdp.issueflow.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
@@ -20,6 +24,7 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final TicketCsvService ticketCsvService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<TicketResponse> create(@Valid @RequestBody CreateTicketRequest req) {
@@ -57,5 +62,19 @@ public class TicketController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         ticketService.deleteTicket(id);
+    }
+
+    @GetMapping("/deleted")
+    public List<TicketResponse> findDeleted(
+            @RequestParam Long projectId,
+            Authentication authentication) {
+        userService.requireAdmin((Long) authentication.getPrincipal());
+        return ticketService.findDeleted(projectId);
+    }
+
+    @PostMapping("/{id}/restore")
+    public TicketResponse restore(@PathVariable Long id, Authentication authentication) {
+        userService.requireAdmin((Long) authentication.getPrincipal());
+        return ticketService.restoreTicket(id);
     }
 }
