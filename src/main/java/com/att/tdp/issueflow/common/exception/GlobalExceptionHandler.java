@@ -1,6 +1,7 @@
 package com.att.tdp.issueflow.common.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,6 +47,11 @@ public class GlobalExceptionHandler {
         body.put("errors", fieldErrors);
         body.put("timestamp", OffsetDateTime.now().toString());
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        return error(HttpStatus.CONFLICT, "The record was modified by another request. Fetch the latest version and retry.");
     }
 
     // Safety net: DB unique constraint violations that slip past service-level checks

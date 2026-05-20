@@ -3,6 +3,8 @@ package com.att.tdp.issueflow.project;
 import com.att.tdp.issueflow.project.dto.CreateProjectRequest;
 import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
+import com.att.tdp.issueflow.ticket.TicketService;
+import com.att.tdp.issueflow.ticket.dto.TicketResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final TicketService ticketService;
 
     @PostMapping
     public ResponseEntity<ProjectResponse> create(@Valid @RequestBody CreateProjectRequest req) {
@@ -31,6 +34,11 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ProjectResponse findById(@PathVariable Long id) {
         return projectService.findById(id);
+    }
+
+    @GetMapping("/{id}/tickets")
+    public List<TicketResponse> findTickets(@PathVariable Long id) {
+        return ticketService.findAllByProject(id);
     }
 
     @PatchMapping("/{id}")
