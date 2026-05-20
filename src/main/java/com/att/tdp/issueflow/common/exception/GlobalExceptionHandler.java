@@ -2,6 +2,7 @@ package com.att.tdp.issueflow.common.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -47,6 +48,11 @@ public class GlobalExceptionHandler {
         body.put("errors", fieldErrors);
         body.put("timestamp", OffsetDateTime.now().toString());
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        return error(HttpStatus.BAD_REQUEST, "File exceeds the 10 MB limit");
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
