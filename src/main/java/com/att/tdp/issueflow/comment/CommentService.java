@@ -1,5 +1,6 @@
 package com.att.tdp.issueflow.comment;
 
+import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.comment.dto.CommentResponse;
 import com.att.tdp.issueflow.comment.dto.CreateCommentRequest;
 import com.att.tdp.issueflow.comment.dto.UpdateCommentRequest;
@@ -28,6 +29,7 @@ public class CommentService {
     private final TicketService ticketService;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public CommentResponse createComment(Long ticketId, CreateCommentRequest req, Long authorId) {
@@ -37,7 +39,9 @@ public class CommentService {
         comment.setContent(req.getContent());
         comment = commentRepository.save(comment);
         syncMentions(comment, req.getContent());
-        return buildResponse(comment);
+        CommentResponse response = buildResponse(comment);
+        auditLogService.log("COMMENT", "CREATE", comment.getId(), null, response);
+        return response;
     }
 
     public List<CommentResponse> findAllByTicket(Long ticketId) {
@@ -49,17 +53,22 @@ public class CommentService {
     @Transactional
     public CommentResponse updateComment(Long ticketId, Long commentId, UpdateCommentRequest req) {
         Comment comment = getOrThrow(ticketId, commentId);
+        CommentResponse oldState = buildResponse(comment);
         comment.setContent(req.getContent());
         comment = commentRepository.save(comment);
         syncMentions(comment, req.getContent());
-        return buildResponse(comment);
+        CommentResponse newState = buildResponse(comment);
+        auditLogService.log("COMMENT", "UPDATE", commentId, oldState, newState);
+        return newState;
     }
 
     @Transactional
     public void deleteComment(Long ticketId, Long commentId) {
         Comment comment = getOrThrow(ticketId, commentId);
+        CommentResponse oldState = buildResponse(comment);
         commentMentionRepository.deleteAllByCommentId(commentId);
         commentRepository.delete(comment);
+        auditLogService.log("COMMENT", "DELETE", commentId, oldState, null);
     }
 
     private Comment getOrThrow(Long ticketId, Long commentId) {

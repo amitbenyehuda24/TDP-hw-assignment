@@ -1,5 +1,6 @@
 package com.att.tdp.issueflow.ticket;
 
+import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.common.exception.BadRequestException;
 import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
 import com.att.tdp.issueflow.project.ProjectService;
@@ -21,6 +22,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final ProjectService projectService;
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest req) {
@@ -34,7 +36,9 @@ public class TicketService {
             ticket.setAssignee(userService.getOrThrow(req.getAssigneeId()));
         }
         ticket.setDueDate(req.getDueDate());
-        return new TicketResponse(ticketRepository.save(ticket));
+        TicketResponse response = new TicketResponse(ticketRepository.save(ticket));
+        auditLogService.log("TICKET", "CREATE", response.getId(), null, response);
+        return response;
     }
 
     public List<TicketResponse> findAllByProject(Long projectId) {
@@ -55,6 +59,8 @@ public class TicketService {
             throw new BadRequestException("Cannot modify a ticket that is already DONE");
         }
 
+        TicketResponse oldState = new TicketResponse(ticket);
+
         if (req.getStatus() != null && req.getStatus() != ticket.getStatus()) {
             if (!ticket.getStatus().canTransitionTo(req.getStatus())) {
                 throw new BadRequestException(
@@ -64,23 +70,25 @@ public class TicketService {
             ticket.setStatus(req.getStatus());
         }
 
-        if (req.getTitle() != null)    ticket.setTitle(req.getTitle());
+        if (req.getTitle() != null)       ticket.setTitle(req.getTitle());
         if (req.getDescription() != null) ticket.setDescription(req.getDescription());
-        if (req.getPriority() != null) ticket.setPriority(req.getPriority());
-        if (req.getType() != null)     ticket.setType(req.getType());
-        if (req.getDueDate() != null)  ticket.setDueDate(req.getDueDate());
-        if (req.getAssigneeId() != null) {
-            ticket.setAssignee(userService.getOrThrow(req.getAssigneeId()));
-        }
+        if (req.getPriority() != null)    ticket.setPriority(req.getPriority());
+        if (req.getType() != null)        ticket.setType(req.getType());
+        if (req.getDueDate() != null)     ticket.setDueDate(req.getDueDate());
+        if (req.getAssigneeId() != null)  ticket.setAssignee(userService.getOrThrow(req.getAssigneeId()));
 
-        return new TicketResponse(ticketRepository.save(ticket));
+        TicketResponse newState = new TicketResponse(ticketRepository.save(ticket));
+        auditLogService.log("TICKET", "UPDATE", id, oldState, newState);
+        return newState;
     }
 
     @Transactional
     public void deleteTicket(Long id) {
         Ticket ticket = getOrThrow(id);
+        TicketResponse oldState = new TicketResponse(ticket);
         ticket.setDeletedAt(OffsetDateTime.now());
         ticketRepository.save(ticket);
+        auditLogService.log("TICKET", "DELETE", id, oldState, null);
     }
 
     public Ticket getOrThrow(Long id) {
