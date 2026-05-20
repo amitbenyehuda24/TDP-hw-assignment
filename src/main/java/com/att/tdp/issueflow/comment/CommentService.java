@@ -45,6 +45,14 @@ public class CommentService {
         return response;
     }
 
+    public List<CommentResponse> findMentionsByUser(Long userId) {
+        userService.getOrThrow(userId);
+        return commentMentionRepository.findAllByMentionedUserIdOrderByCommentCreatedAtDesc(userId)
+            .stream()
+            .map(m -> buildResponse(m.getComment()))
+            .toList();
+    }
+
     public List<CommentResponse> findAllByTicket(Long ticketId) {
         ticketService.getOrThrow(ticketId);
         return commentRepository.findAllByTicketId(ticketId)

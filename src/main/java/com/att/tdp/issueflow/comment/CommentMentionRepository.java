@@ -9,4 +9,6 @@ public interface CommentMentionRepository extends JpaRepository<CommentMention, 
     List<CommentMention> findAllByCommentId(Long commentId);
 
     void deleteAllByCommentId(Long commentId);
+
+    List<CommentMention> findAllByMentionedUserIdOrderByCommentCreatedAtDesc(Long userId);
 }

@@ -1,5 +1,7 @@
 package com.att.tdp.issueflow.user;
 
+import com.att.tdp.issueflow.comment.CommentService;
+import com.att.tdp.issueflow.comment.dto.CommentResponse;
 import com.att.tdp.issueflow.user.dto.CreateUserRequest;
 import com.att.tdp.issueflow.user.dto.UpdateUserRequest;
 import com.att.tdp.issueflow.user.dto.UserResponse;
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final CommentService commentService;
 
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest req) {
@@ -42,5 +45,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         userService.deleteUser(id);
+    }
+
+    @GetMapping("/{id}/mentions")
+    public List<CommentResponse> mentions(@PathVariable Long id) {
+        return commentService.findMentionsByUser(id);
     }
 }
