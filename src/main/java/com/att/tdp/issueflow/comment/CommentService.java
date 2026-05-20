@@ -3,6 +3,7 @@ package com.att.tdp.issueflow.comment;
 import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.comment.dto.CommentResponse;
 import com.att.tdp.issueflow.comment.dto.CreateCommentRequest;
+import com.att.tdp.issueflow.comment.dto.MentionedUserDto;
 import com.att.tdp.issueflow.comment.dto.UpdateCommentRequest;
 import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
 import com.att.tdp.issueflow.ticket.TicketService;
@@ -88,7 +89,7 @@ public class CommentService {
             String username = matcher.group(1);
             if (!seen.add(username)) continue;
 
-            userRepository.findByUsername(username).ifPresent(user -> {
+            userRepository.findByUsernameIgnoreCase(username).ifPresent(user -> {
                 CommentMention mention = new CommentMention();
                 mention.setComment(comment);
                 mention.setMentionedUser(user);
@@ -98,10 +99,10 @@ public class CommentService {
     }
 
     private CommentResponse buildResponse(Comment comment) {
-        List<Long> mentionedIds = commentMentionRepository.findAllByCommentId(comment.getId())
+        List<MentionedUserDto> mentionedUsers = commentMentionRepository.findAllByCommentId(comment.getId())
             .stream()
-            .map(m -> m.getMentionedUser().getId())
+            .map(m -> new MentionedUserDto(m.getMentionedUser()))
             .toList();
-        return new CommentResponse(comment, mentionedIds);
+        return new CommentResponse(comment, mentionedUsers);
     }
 }

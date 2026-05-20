@@ -13,17 +13,17 @@ public class CommentResponse {
     private final Long ticketId;
     private final Long authorId;
     private final String content;
-    private final List<Long> mentionedUserIds;
+    private final List<MentionedUserDto> mentionedUsers;
     private final Long version;
     private final OffsetDateTime createdAt;
     private final OffsetDateTime updatedAt;
 
-    public CommentResponse(Comment comment, List<Long> mentionedUserIds) {
+    public CommentResponse(Comment comment, List<MentionedUserDto> mentionedUsers) {
         this.id = comment.getId();
         this.ticketId = comment.getTicket().getId();
         this.authorId = comment.getAuthor().getId();
         this.content = comment.getContent();
-        this.mentionedUserIds = mentionedUserIds;
+        this.mentionedUsers = mentionedUsers;
         this.version = comment.getVersion();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
