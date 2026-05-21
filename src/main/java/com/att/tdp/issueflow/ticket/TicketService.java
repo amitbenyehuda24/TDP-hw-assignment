@@ -76,7 +76,10 @@ public class TicketService {
 
         if (req.getTitle() != null)       ticket.setTitle(req.getTitle());
         if (req.getDescription() != null) ticket.setDescription(req.getDescription());
-        if (req.getPriority() != null)    ticket.setPriority(req.getPriority());
+        if (req.getPriority() != null) {
+            ticket.setPriority(req.getPriority());
+            ticket.setOverdue(false); // manual change resets auto-escalation state
+        }
         if (req.getType() != null)        ticket.setType(req.getType());
         if (req.getDueDate() != null)     ticket.setDueDate(req.getDueDate());
         if (req.getAssigneeId() != null)  ticket.setAssignee(userService.getOrThrow(req.getAssigneeId()));
