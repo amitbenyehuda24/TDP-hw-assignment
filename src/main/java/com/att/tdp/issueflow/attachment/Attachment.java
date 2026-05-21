@@ -35,8 +35,7 @@ public class Attachment {
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    @Lob
-    @Column(name = "file_data", nullable = false)
+    @Column(name = "file_data", nullable = false, columnDefinition = "BYTEA")
     private byte[] fileData;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -29,7 +29,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             .content(objectMapper.writeValueAsString(
                 Map.of("username", "admin1", "password", "pass123"))))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.token").isNotEmpty());
+            .andExpect(jsonPath("$.access_token").isNotEmpty());
     }
 
     @Test
@@ -66,7 +66,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
         mockMvc.perform(post("/auth/logout")
             .header("Authorization", auth(token)))
-            .andExpect(status().isOk());
+            .andExpect(status().isNoContent());
 
         // same token must now be rejected
         mockMvc.perform(get("/auth/me")

@@ -72,7 +72,7 @@ public abstract class AbstractIntegrationTest {
                 Map.of("username", username, "password", password)
             )))
             .andReturn().getResponse().getContentAsString();
-        return objectMapper.readTree(resp).get("token").asText();
+        return objectMapper.readTree(resp).get("access_token").asText();
     }
 
     protected Long getUserId(String token) throws Exception {
