@@ -572,13 +572,13 @@ curl -s -X POST http://localhost:8080/auth/logout \
 
 ```powershell
 # PowerShell
-Invoke-RestMethod -Uri http://localhost:8080/projects/1/tickets `
+Invoke-RestMethod -Uri "http://localhost:8080/tickets?projectId=1" `
   -Headers @{ Authorization = "Bearer $TOKEN" }
 ```
 
 ```bash
 # Bash
-curl -s http://localhost:8080/projects/1/tickets \
+curl -s "http://localhost:8080/tickets?projectId=1" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
