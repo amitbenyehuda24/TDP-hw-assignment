@@ -7,12 +7,17 @@ import com.att.tdp.issueflow.project.ProjectService;
 import com.att.tdp.issueflow.ticket.dto.CreateTicketRequest;
 import com.att.tdp.issueflow.ticket.dto.TicketResponse;
 import com.att.tdp.issueflow.ticket.dto.UpdateTicketRequest;
+import com.att.tdp.issueflow.ticket.dto.WorkloadResponse;
+import com.att.tdp.issueflow.user.Role;
+import com.att.tdp.issueflow.user.User;
+import com.att.tdp.issueflow.user.UserRepository;
 import com.att.tdp.issueflow.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -22,6 +27,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final ProjectService projectService;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final TicketDependencyService dependencyService;
 
@@ -33,13 +39,51 @@ public class TicketService {
         ticket.setPriority(req.getPriority());
         ticket.setType(req.getType());
         ticket.setProject(projectService.getOrThrow(req.getProjectId()));
+
         if (req.getAssigneeId() != null) {
             ticket.setAssignee(userService.getOrThrow(req.getAssigneeId()));
+        } else {
+            User autoAssigned = autoAssign(req.getProjectId());
+            ticket.setAssignee(autoAssigned);
         }
+
         ticket.setDueDate(req.getDueDate());
-        TicketResponse response = new TicketResponse(ticketRepository.save(ticket));
+        Ticket saved = ticketRepository.save(ticket);
+        TicketResponse response = new TicketResponse(saved);
         auditLogService.log("TICKET", "CREATE", response.getId(), null, response);
+
+        if (req.getAssigneeId() == null && saved.getAssignee() != null) {
+            auditLogService.log("TICKET", "AUTO_ASSIGN", saved.getId(), null, response, "SYSTEM");
+        }
+
         return response;
+    }
+
+    public List<WorkloadResponse> getWorkload(Long projectId) {
+        projectService.getOrThrow(projectId);
+        return ticketRepository.findDistinctAssigneesByProjectId(projectId)
+            .stream()
+            .filter(u -> u.getRole() == Role.DEVELOPER)
+            .map(u -> new WorkloadResponse(
+                u.getId(),
+                u.getUsername(),
+                ticketRepository.countByAssigneeIdAndProjectIdAndStatusNotAndDeletedAtIsNull(
+                    u.getId(), projectId, TicketStatus.DONE)
+            ))
+            .sorted(Comparator.comparingLong(WorkloadResponse::getOpenTicketCount))
+            .toList();
+    }
+
+    private User autoAssign(Long projectId) {
+        List<User> developers = userRepository.findAllByRole(Role.DEVELOPER);
+        if (developers.isEmpty()) return null;
+        return developers.stream()
+            .min(Comparator
+                .comparingLong((User u) ->
+                    ticketRepository.countByAssigneeIdAndProjectIdAndStatusNotAndDeletedAtIsNull(
+                        u.getId(), projectId, TicketStatus.DONE))
+                .thenComparingLong(User::getId))
+            .orElse(null);
     }
 
     public List<TicketResponse> findAllByProject(Long projectId) {

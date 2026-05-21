@@ -22,8 +22,12 @@ public class AuditLogService {
     private final ObjectMapper objectMapper;
 
     public void log(String entityType, String action, Long entityId, Object oldValue, Object newValue) {
+        log(entityType, action, entityId, oldValue, newValue, resolveActor());
+    }
+
+    public void log(String entityType, String action, Long entityId, Object oldValue, Object newValue, String actor) {
         AuditLog entry = new AuditLog();
-        entry.setActor(resolveActor());
+        entry.setActor(actor);
         entry.setEntityType(entityType);
         entry.setAction(action);
         entry.setEntityId(entityId);

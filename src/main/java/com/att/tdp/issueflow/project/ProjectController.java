@@ -5,6 +5,7 @@ import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
 import com.att.tdp.issueflow.ticket.TicketService;
 import com.att.tdp.issueflow.ticket.dto.TicketResponse;
+import com.att.tdp.issueflow.ticket.dto.WorkloadResponse;
 import com.att.tdp.issueflow.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,11 @@ public class ProjectController {
     @GetMapping("/{id}/tickets")
     public List<TicketResponse> findTickets(@PathVariable Long id) {
         return ticketService.findAllByProject(id);
+    }
+
+    @GetMapping("/{id}/workload")
+    public List<WorkloadResponse> workload(@PathVariable Long id) {
+        return ticketService.getWorkload(id);
     }
 
     @PatchMapping("/{id}")
