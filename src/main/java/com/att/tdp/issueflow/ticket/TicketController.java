@@ -31,7 +31,12 @@ public class TicketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketService.createTicket(req));
     }
 
-    // Literal path segments (/export, /import) are matched before path variables (/{id})
+    @GetMapping
+    public List<TicketResponse> findByProject(@RequestParam Long projectId) {
+        return ticketService.findAllByProject(projectId);
+    }
+
+    // Literal path segments (/export, /import, /deleted) are matched before path variables (/{id})
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(@RequestParam Long projectId) {
         byte[] csv = ticketCsvService.exportToCsv(projectId);

@@ -1,6 +1,7 @@
 package com.att.tdp.issueflow.attachment;
 
 import com.att.tdp.issueflow.attachment.dto.AttachmentResponse;
+import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.common.exception.BadRequestException;
 import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
 import com.att.tdp.issueflow.ticket.TicketService;
@@ -26,6 +27,7 @@ public class AttachmentService {
     private final AttachmentRepository attachmentRepository;
     private final TicketService ticketService;
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public AttachmentResponse upload(Long ticketId, MultipartFile file, Long uploaderId) {
@@ -53,7 +55,17 @@ public class AttachmentService {
             throw new BadRequestException("Failed to read uploaded file");
         }
 
-        return new AttachmentResponse(attachmentRepository.save(attachment));
+        AttachmentResponse response = new AttachmentResponse(attachmentRepository.save(attachment));
+        auditLogService.log("ATTACHMENT", "CREATE", response.getId(), null, response);
+        return response;
+    }
+
+    @Transactional
+    public void delete(Long ticketId, Long attachmentId) {
+        Attachment attachment = getFileOrThrow(ticketId, attachmentId);
+        AttachmentResponse snapshot = new AttachmentResponse(attachment);
+        attachmentRepository.delete(attachment);
+        auditLogService.log("ATTACHMENT", "DELETE", attachmentId, snapshot, null);
     }
 
     public List<AttachmentResponse> findAllByTicket(Long ticketId) {

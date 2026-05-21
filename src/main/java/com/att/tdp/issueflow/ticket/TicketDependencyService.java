@@ -1,5 +1,6 @@
 package com.att.tdp.issueflow.ticket;
 
+import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.common.exception.BadRequestException;
 import com.att.tdp.issueflow.common.exception.ConflictException;
 import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
@@ -17,6 +18,7 @@ public class TicketDependencyService {
 
     private final TicketDependencyRepository dependencyRepository;
     private final TicketRepository ticketRepository;
+    private final AuditLogService auditLogService;
 
     private Ticket getOrThrow(Long id) {
         return ticketRepository.findByIdAndDeletedAtIsNull(id)
@@ -45,7 +47,9 @@ public class TicketDependencyService {
         dep.setBlocker(blocker);
         dependencyRepository.save(dep);
 
-        return new DependencyResponse(blocker);
+        DependencyResponse response = new DependencyResponse(blocker);
+        auditLogService.log("DEPENDENCY", "CREATE", dep.getId(), null, response);
+        return response;
     }
 
     public List<DependencyResponse> getDependencies(Long ticketId) {
@@ -60,7 +64,9 @@ public class TicketDependencyService {
             .findByTicketIdAndBlockerId(ticketId, blockerId)
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Dependency not found between ticket " + ticketId + " and blocker " + blockerId));
+        DependencyResponse snapshot = new DependencyResponse(dep.getBlocker());
         dependencyRepository.delete(dep);
+        auditLogService.log("DEPENDENCY", "DELETE", dep.getId(), snapshot, null);
     }
 
     public boolean hasUnresolvedBlockers(Long ticketId) {

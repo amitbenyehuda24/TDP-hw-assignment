@@ -45,4 +45,10 @@ public class AttachmentController {
             .contentType(MediaType.parseMediaType(attachment.getContentType()))
             .body(attachment.getFileData());
     }
+
+    @DeleteMapping("/{attachmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long ticketId, @PathVariable Long attachmentId) {
+        attachmentService.delete(ticketId, attachmentId);
+    }
 }
