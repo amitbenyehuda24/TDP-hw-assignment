@@ -1,5 +1,6 @@
 package com.att.tdp.issueflow.common.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -13,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -73,6 +75,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+        log.error("Unexpected error", ex);
         return error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 

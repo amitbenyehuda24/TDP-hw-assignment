@@ -4,7 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,11 +16,16 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
-@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final TokenBlocklistRepository tokenBlocklistRepository;
+
+    @Autowired
+    public JwtFilter(JwtService jwtService, @Lazy TokenBlocklistRepository tokenBlocklistRepository) {
+        this.jwtService = jwtService;
+        this.tokenBlocklistRepository = tokenBlocklistRepository;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
